@@ -39,8 +39,6 @@ async function musicUpload(req,res) {
             title : music.title,
             artist : music.artist
         }
-        
-
     })
     
 
