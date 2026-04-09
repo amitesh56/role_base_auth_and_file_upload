@@ -1,25 +1,11 @@
 const musicModel = require("../models/music.model")
-const jwt = require("jsonwebtoken")
+const albumModel = require("../models/album.model")
+
 const uploadFile = require("../services/storage.service")
 
 async function musicUpload(req,res) {
-    const token = req.cookies.token;
-    if(!token){
-        return res.status(401).json({
-            message : "Unauthorise"
-        })
-    }
-
-    const decode = jwt.verify(token,process.env.JWT_SECRET);
-    try{
-        if(decode.role!="artist"){
-        return res.status(401).json({
-            message : " you are not an artist"
-        })
-    }}catch(err){
-        console.log("Unexpexted error" + err.message);
-    }
-
+   
+    const user = req.user;
     const title = req.body.title;
     const file = req.file;
 
@@ -28,7 +14,7 @@ async function musicUpload(req,res) {
     const music = await musicModel.create({
         uri : result.url,
         title ,
-        artist : decode.id
+        artist : user.id
     })
 
     res.status(201).json({
@@ -43,4 +29,25 @@ async function musicUpload(req,res) {
     
 
 }
-module.exports = {musicUpload}
+
+async function createAlbum(req,res){
+    const {title, music} = req.body;
+    const user = req.user;
+    
+    const album = await albumModel.create({
+        title,
+        music : music,
+        artist : user.id
+    })
+
+    res.status(201).json({
+        message:"Album is created success fully",
+        album : {
+            id : album.id,
+            title : album.title,
+            artist : album.artist,
+            music : album.music
+        }
+    })
+}
+module.exports = {musicUpload , createAlbum}
